@@ -19,7 +19,10 @@ VecelのSettingタブのEnvironment Variablesでユーザー名とパスワー�
 VecelのStorageタブのEdge ConfigでIPアドレスの配列を作る
 ```
 {
-  "IP_BLACK_LIST": [
+  "BLACK_LIST": [
+    "xxx.xxx.xxx.xxx"
+  ],
+  "WHITE_LIST": [
     "xxx.xxx.xxx.xxx"
   ]
 }

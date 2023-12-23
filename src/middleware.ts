@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { get } from '@vercel/edge-config';
+import { createClient } from '@vercel/edge-config';
 
 export const config = {
   // https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
@@ -7,12 +7,14 @@ export const config = {
 };
 
 export async function middleware(request: NextRequest) {
-  // プロダクション環境ではブラックリストをチェックする
-  if (process.env.VERCEL_ENV === 'production') {
-    const blackList = await get<string[]>('IP_BLACK_LIST');
-    if (blackList?.includes(request.ip as string)) {
-      return new NextResponse(null, { status: 401 });
-    }
+  const ipConfig = createClient(process.env.EDGE_CONFIG);
+  const ip = await ipConfig.getAll<{
+    BLACK_LIST: string[],
+    WHITE_LIST: string[]
+  }>();
+
+  if (ip.BLACK_LIST?.includes(request.ip as string)) {
+    return new NextResponse(null, { status: 401 });
   }
 
   // プロダクション環境以外ではBasic認証をかける
@@ -33,4 +35,3 @@ export async function middleware(request: NextRequest) {
     })
   }
 }
-
