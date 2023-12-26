@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-export const corsHeaders = {
+const corsHeaders = {
   'Access-Control-Allow-Origin': 'https://next-middleware-demo.vercel.app, http://localhost:3000',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
