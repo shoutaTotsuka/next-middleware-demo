@@ -13,6 +13,7 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Basic認証
 - VecelのSettingタブのEnvironment Variablesでユーザー名とパスワードを指定  
+
 | key | value  |
 | :--- | :--- |
 | `BASIC_AUTH_USER` | user |
@@ -32,14 +33,13 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 ```
 
 ## Rate Limit
-- 特定の時間内に特定の回数以上のリクエストが発生した場合にトラフィックの制限  
-- `@vercel/kv`と`@upstash/ratelimit`を利用  
 - VecelのStorageタブでKVを追加  
+- `@vercel/kv`と`@upstash/ratelimit`を利用  
 - `middleware.ts`で任意の閾値を指定する  
 ```
+// 同一IPから10秒間で5回以上のリクエストがあった場合にトラフィックを制限
 const ratelimit: Ratelimit = new Ratelimit({
   redis: kv,
-  // 5 requests from the same IP in 10 seconds
   limiter: Ratelimit.slidingWindow(5, '10 s'),
 });
 ```
