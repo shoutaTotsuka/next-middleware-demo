@@ -12,3 +12,7 @@ export async function GET(request: Request) {
     { status: 200, headers: corsHeaders }
   )
 }
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders })
+}
