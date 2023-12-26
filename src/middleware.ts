@@ -1,9 +1,18 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@vercel/edge-config';
+import { kv } from '@vercel/kv';
+import { Ratelimit } from '@upstash/ratelimit';
+
+const isProduction: boolean = process.env.VERCEL_ENV === 'production';
+const ratelimit: Ratelimit = new Ratelimit({
+  redis: kv,
+  // 5 requests from the same IP in 10 seconds
+  limiter: Ratelimit.slidingWindow(5, '10 s'),
+});
 
 export const config = {
   // https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
-  matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
+  matcher: ['/((?!_next/static|_next/image|.*\\.png$).*)'],
 };
 
 export async function middleware(request: NextRequest) {
@@ -13,12 +22,18 @@ export async function middleware(request: NextRequest) {
     WHITE_LIST: string[]
   }>();
 
-  if (ip.BLACK_LIST?.includes(request.ip as string)) {
-    return new NextResponse(null, { status: 401 });
-  }
+  if (isProduction) {
+    // プロダクション環境でブラックリストに登録されているIPを弾く
+    if (ip.BLACK_LIST?.includes(request.ip as string)) {
+      return new NextResponse(null, { status: 401 });
+    }
+    // プロダクション環境でレートリミットをかける
+    const { success, pending, limit, reset, remaining } = await ratelimit.limit(request.ip as string);
+    return success ? NextResponse.next()
+                   : new NextResponse('Too many requests', { status: 429 });
 
-  // プロダクション環境以外ではBasic認証をかける
-  if (process.env.VERCEL_ENV !== 'production') {
+  } else {
+    // プロダクション環境以外ではBasic認証をかける
     const authorizationHeader = request.headers.get('authorization')
     if (authorizationHeader) {
       const basicAuth: string = authorizationHeader.split(' ')[1]
@@ -27,7 +42,7 @@ export async function middleware(request: NextRequest) {
         return NextResponse.next()
       }
     }
-    return new Response('Basic Auth required', {
+    return new NextResponse('Basic Auth required', {
       status: 401,
       headers: {
         'WWW-Authenticate': 'Basic realm="Secure Area"'
