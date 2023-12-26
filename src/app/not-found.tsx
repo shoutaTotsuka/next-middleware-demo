@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link';
-import styles from './not-found.module.css'
+import styles from '@/app/ui/not-found.module.css'
 
 export const metadata: Metadata = {
   title: '404',

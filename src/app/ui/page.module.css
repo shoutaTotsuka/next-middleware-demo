@@ -10,7 +10,19 @@
     margin-bottom: 1rem;
   }
   .link {
+    display: inline-block;
+    margin-bottom: 3rem;
     text-decoration: underline;
     color: cornflowerblue;
+  }
+
+  .button {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 0.2rem;
+    background-color: cornflowerblue;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
   }
 }
