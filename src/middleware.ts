@@ -28,7 +28,7 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
 
   if (isProduction) {
     // プロダクション環境で`/api`に対するレートリミットをかける
-    if (request.url.startsWith('/api')) {
+    if (request.nextUrl.pathname.startsWith('/api')) {
       const { success, pending, limit, reset, remaining } = await ratelimit.limit(request.ip as string);
       return success ? NextResponse.next()
                      : new NextResponse('Too many requests', { status: 429 });
