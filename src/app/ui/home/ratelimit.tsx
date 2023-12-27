@@ -4,8 +4,9 @@ import { useState } from 'react';
 import styles from './ratelimit.module.css';
 
 export default function RateLimit() {
-  const [status, setStatus] = useState<number | undefined>();
+  const [status, setStatus] = useState<number | null>();
   const getData = async () => {
+    setStatus(100);
     try {
       const response = await fetch('/api/demo');
       if (response.ok) {
@@ -29,8 +30,11 @@ export default function RateLimit() {
       >
         FetchData from API
       </button>
-      {status === 429 ? <p className={styles.limit}>{status} Too many requests, Please try again later.</p>
-                      : <p className={styles.ready}>{status}</p>
+      {
+        status === 429 ? <p className={styles.text}><span className={styles.limit}>{status} Too many requests.</span></p> :
+        status === 200 ? <p className={styles.text}><span className={styles.ok}>{status}</span></p> :
+        status === 100 ? <p className={styles.text}><span className={styles.loader}></span></p>
+                       : <p className={styles.text}><span className={styles.default}>{status}</span></p>
       }
     </div>
   )
