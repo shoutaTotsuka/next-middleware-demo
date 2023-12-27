@@ -23,7 +23,7 @@ export default function RateLimit() {
 
   return (
     <div>
-      <p className={styles.text}>RateLimit Demo</p>
+      <p className={styles.text}>RateLimit Demo (5 requests from the same IP in 10 seconds.)</p>
       <button
         onClick={getData}
         className={styles.button}
@@ -31,10 +31,10 @@ export default function RateLimit() {
         FetchData from API
       </button>
       {
-        status === 429 ? <p className={styles.text}><span className={styles.limit}>{status} Too many requests.</span></p> :
-        status === 200 ? <p className={styles.text}><span className={styles.ok}>{status}</span></p> :
-        status === 100 ? <p className={styles.text}><span className={styles.loader}></span></p>
-                       : <p className={styles.text}><span className={styles.default}>{status}</span></p>
+        status === 429 ? <p className={styles.status}><span className={styles.limit}>{status} Too many requests, Try again later.</span></p> :
+        status === 200 ? <p className={styles.status}><span className={styles.ok}>{status}</span></p> :
+        status === 100 ? <p className={styles.status}><span className={styles.loading}></span></p>
+                       : <p className={styles.status}><span className={styles.default}>{status}</span></p>
       }
     </div>
   )
