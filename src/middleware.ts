@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { NextResponse, type NextRequest, NextFetchEvent } from 'next/server';
 import { createClient } from '@vercel/edge-config';
 import { kv } from '@vercel/kv';
 import { Ratelimit } from '@upstash/ratelimit';
@@ -15,23 +15,24 @@ export const config = {
   matcher: ['/((?!_next/static|_next/image|.*\\.png$).*)'],
 };
 
-export async function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest, event: NextFetchEvent) {
   const ipConfig = createClient(process.env.EDGE_CONFIG);
   const ip = await ipConfig.getAll<{
     BLACK_LIST: string[],
     WHITE_LIST: string[]
   }>();
 
-  if (isProduction) {
-    // プロダクション環境でブラックリストに登録されているIPを弾く
-    if (ip.BLACK_LIST?.includes(request.ip as string)) {
-      return new NextResponse(null, { status: 401 });
-    }
-    // プロダクション環境でレートリミットをかける
-    const { success, pending, limit, reset, remaining } = await ratelimit.limit(request.ip as string);
-    return success ? NextResponse.next()
-                   : new NextResponse('Too many requests', { status: 429 });
+  if (ip.BLACK_LIST?.includes(request.ip as string)) {
+    return new NextResponse(null, { status: 401 });
+  }
 
+  if (isProduction) {
+    // プロダクション環境で`/api`に対するレートリミットをかける
+    if (request.url.startsWith('/api')) {
+      const { success, pending, limit, reset, remaining } = await ratelimit.limit(request.ip as string);
+      return success ? NextResponse.next()
+                     : new NextResponse('Too many requests', { status: 429 });
+    }
   } else {
     // プロダクション環境以外ではBasic認証をかける
     const authorizationHeader = request.headers.get('authorization')
